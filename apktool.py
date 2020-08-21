@@ -23,6 +23,10 @@ if __name__ == "__main__":
     parser.add_argument("-psw", "--pmclear-start-W", dest="pm_clear_start_W", action="store_true", help="pm clear apk and start -W LaunchableActivity")
     parser.add_argument("-ks", "--kill-sign", dest="kill_sign", action="store_true", help="kill sign check for apk")
     parser.add_argument("-si", "--sign", dest="sign", action="store_true", help="sign apk to {dirname}/ori.signed.apk")
+
+    parser.add_argument("-fsc", "--find-same-class", dest="find_same_class", action="store_true", help="find if apk have same class in diff dex")
+
+    parser.add_argument("-de", "--debugable", dest="debugable", action="store_true", help="debugable apk")
     
     parser.add_argument("apk", action="store", help="The apk file path")
 
@@ -68,3 +72,9 @@ if __name__ == "__main__":
     
     if args.kill_sign:
         apkx.kill_signcheck()
+
+    if args.find_same_class:
+        apkx.find_same_class()
+
+    if args.debugable:
+        apkx.debugable()

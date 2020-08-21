@@ -9,12 +9,18 @@ import base64
 class apkx(object):
     def __init__(self, inApk, manifest):
         self.inApk = inApk
-        self.workspace = "%s/workspace"%(os.path.abspath('.'))
-        if os.path.exists(self.workspace):
-            os.removedirs(self.workspace)
-        os.makedirs(self.workspace)
+        self.workspace = "%s/.workspace"%(os.path.abspath('.'))
+        
         self.manifest=manifest
         self.mac_mach = "''" if PLATFORM=="macos" else ""
+
+    def create_workspace(self):
+        if os.path.exists(self.workspace):
+            exec_command("rm -rf %s"%(self.workspace))
+        os.makedirs(self.workspace)
+
+    def clear_workspace(self):
+        exec_command("rm -rf %s"%(self.workspace))
 
     def get_superclass(self, smali_path):
         with open(smali_path) as smail_file:
@@ -60,6 +66,7 @@ class apkx(object):
     @output
     def kill_signcheck(self):
         try:
+            self.create_workspace()
             outapk = "%s.killsign.apk"%(self.inApk[0:-4])
             exec_command("cp -f %s %s"%(self.inApk, outapk), log = True, status=True)
             '''
@@ -117,4 +124,44 @@ class apkx(object):
         except Exception as e:
             return "kill sign check failed"
         finally:
-            exec_command("rm -rf %s"%self.workspace)
+            self.clear_workspace()
+
+    @output
+    def find_same_class(self):
+        try:
+            self.create_workspace()
+            exec_command("unzip %s classes*.dex -d %s"%(self.inApk ,self.workspace))
+            same_classes = []
+            diff_classes = []
+            dexes = [os.path.join(self.workspace, name) for name in os.listdir(self.workspace) if name.endswith('.dex')]
+            for dex in dexes:
+                dex_classes_name = exec_command("%s list classes %s"%(BAKSMALI, dex))
+                for item in dex_classes_name.split('\n'):
+                    if item not in diff_classes:
+                        #print("%s not in diff_classes"%item)
+                        diff_classes.append(item)
+                    else : 
+                        #print("%s has same class"%item)
+                        same_classes.append(item)
+                        pass
+                pass
+            pass
+            return "Find result:\n%s"%(same_classes)
+        except Exception as e:
+            return "Find same class Error"
+        finally:
+            self.clear_workspace()
+
+    @output
+    def debugable(self):
+        try:
+            self.create_workspace()
+            exec_command("unzip %s AndroidManifest.xml -d %s"%(self.inApk, self.workspace))
+            exec_command("cd %s && mv AndroidManifest.xml old.xml && cd -"%(self.workspace))
+            exec_command("%s modify %s/old.xml %s/AndroidManifest.xml debugable"%(AXML, self.workspace, self.workspace))
+            exec_command("cd %s && rm -f old.xml && zip -rD %s AndroidManifest.xml && cd -"%(self.workspace, self.inApk))
+            return "debugable : %s"%(self.inApk)
+        except Exception as e:
+            return "debugable apk error"
+        finally:
+            self.clear_workspace()

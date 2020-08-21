@@ -1,0 +1,78 @@
+#!/usr/bin/env bash  
+
+adb forward tcp:23946 tcp:23946
+IDADIR="/Applications/IDA Pro 7.0/dbgsrv"
+IDANAME="android_server"
+
+# Android 4.0
+sdk=`adb shell getprop|grep ro.build.version.sdk|awk '{print $2}'|cut -c 2-3`
+if [ $sdk -lt "16" ]; then
+    IDANAME="android_server_nonpie"
+fi
+
+# parse param
+name=`basename $0`
+if [[ $# -ne 0 ]]; then
+    case $1 in
+        "32")
+            IDANAME="android_server"
+            ;;
+
+        "64")
+            IDANAME="android_server64"
+            ;;
+
+        "x86")
+            IDANAME="android_x86_server"
+            ;;
+
+        "x64")
+            IDANAME="android_x64_server"
+            ;;
+
+        *)
+            echo "usage: $name [32|64|x86|x64]"
+            exit 1
+            ;;
+    esac
+fi
+
+TMP="/data/local/tmp"
+adb push "$IDADIR/$IDANAME" $TMP
+
+if [[ `adb shell id` =~ "uid=0(root)" ]]; then
+
+    adb shell "chmod 777 $TMP/$IDANAME"
+    adb shell "$TMP/$IDANAME"
+
+elif [[ `adb shell su -c id 2>&1` =~ "uid=0(root)" ]]; then
+    adb shell su -c "chmod 777 $TMP/$IDANAME"
+    adb shell su -c "$TMP/$IDANAME"
+
+elif [[ `adb shell su -c id 2>&1` =~ "invalid uid" ]]; then
+    
+    adb root
+    adb forward tcp:23946 tcp:23946
+    adb shell "chmod 777 $TMP/$IDANAME"
+    adb shell "$TMP/$IDANAME"
+
+elif [[ `adb shell su -c id 2>&1` =~ "su: not found" ]] || [[ `adb shell su -c id 2>&1` =~ "su: inaccessible or not found" ]]; then
+    
+    echo "just ida debug app";
+    echo "please input package name:"
+    while read PACKAGE_NAME; do
+        adb shell pm path $PACKAGE_NAME
+        if [[ $? -ne 0 ]]; then
+            echo "Ensure the package is installed"
+            continue
+        fi
+        adb shell run-as $PACKAGE_NAME cp $TMP/$IDANAME $IDANAME
+        adb shell run-as $PACKAGE_NAME chmod 777 $IDANAME
+        adb shell run-as $PACKAGE_NAME ./$IDANAME
+        break
+    done
+else
+
+    echo "device not root or app not debuggable"
+
+fi

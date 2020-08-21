@@ -1,0 +1,74 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import struct
+import msgpack
+import zlib
+from Crypto.Cipher import AES 
+from Crypto.PublicKey import RSA
+import json
+import os
+import time
+import traceback
+
+import zipfile
+import fnmatch
+
+def decrypt(text,key):
+    BS = AES.block_size
+    pad = lambda s: s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
+    unpad = lambda s : s[0:-ord(s[-1])]
+    return unpad(AES.new(key, AES.MODE_ECB).decrypt(text))
+
+def zipfile_find(zipfn,pattern):
+    try:
+        zipfp=zipfile.ZipFile(zipfn,'r')
+        arfiles=[]
+        for info in zipfp.infolist():
+            if fnmatch.fnmatch(info.filename,pattern):
+                arfiles.append(info.filename)
+        return (zipfp,arfiles)
+    except:
+        #traceback.print_exc()
+        return (None,[])
+
+def sdk_vtag(inApk):
+    #zipfp,arfiles=zipfile_find(inApk,'lib/*/libCmbShield.so')
+    zipfp,arfiles=zipfile_find(inApk,'lib/*/*.so')
+    if not arfiles:
+        zipfp,arfiles=zipfile_find(inApk,'base/lib/*/*.so')
+    if zipfp is None:
+        print('apk file is not a ZIP-format file!!!')
+        return
+    print arfiles
+    for arfile in arfiles:
+        if str(arfile).find('DexHelper') != -1 or str(arfile).find('AppGuard') != -1 :
+            data = zipfp.open(arfile,'r').read() 
+            pos =0
+            while True:
+                try:
+                    pos = data.find('\x00',pos)
+                    if pos == -1: break
+                    pos = pos + 1
+                    xlen = struct.unpack('H',data[pos+25:pos+27])[0]
+                    if data[pos+xlen+27] == '\xab':
+                        entxt = data[pos+27:pos+xlen+27]
+                        detxt3 = msgpack.unpackb(zlib.decompress(decrypt(entxt,'72b343cc7ebbba51')))
+                        print json.dumps(detxt3[0],indent=4,sort_keys=True)
+			print arfile
+                        print 'device:',detxt3[1]
+                        print 'time:',time.strftime('%Y-%m-%d %X', time.localtime(detxt3[2]))                        
+                except:
+                    #traceback.print_exc()
+                    pass
+
+
+if __name__ == "__main__":
+    from optparse import OptionParser
+    parser = OptionParser()
+
+    parser.add_option("-i", "--input apk file", dest="inapk",
+                      help="input apk file")    
+
+    (cmd_options, args) = parser.parse_args()
+    # sdk_vtag(cmd_options.inapk)
+    sdk_vtag(args[0])
