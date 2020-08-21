@@ -120,6 +120,7 @@ class apkx(object):
             exec_command("%s modify %s/old.xml %s/app.xml %s && rm -f %s/old.xml"%(AXML, self.workspace, self.workspace, self.manifest.applicaionName, self.workspace), allow_fail=False)
             exec_command("%s modify %s/app.xml %s/AndroidManifest.xml debugable && rm -f %s/app.xml"%(AXML, self.workspace, self.workspace, self.workspace), allow_fail=False)
             exec_command("cd %s && zip -rD %s AndroidManifest.xml && rm -f AndroidManifest.xml && cd -"%(self.workspace, outapk),allow_fail=False)
+            self.del_sign()
             return "kill sign check success:\n%s"%outapk
         except Exception as e:
             return "kill sign check failed"
@@ -160,8 +161,15 @@ class apkx(object):
             exec_command("cd %s && mv AndroidManifest.xml old.xml && cd -"%(self.workspace))
             exec_command("%s modify %s/old.xml %s/AndroidManifest.xml debugable"%(AXML, self.workspace, self.workspace))
             exec_command("cd %s && rm -f old.xml && zip -rD %s AndroidManifest.xml && cd -"%(self.workspace, self.inApk))
+            self.del_sign()
             return "debugable : %s"%(self.inApk)
         except Exception as e:
             return "debugable apk error"
         finally:
             self.clear_workspace()
+
+    def del_sign(self):
+        exec_command("zip -d %s \"META-INF/*.RSA\""%(self.inApk), allow_fail=True)
+        exec_command("zip -d %s \"META-INF/*.SF\""%(self.inApk), allow_fail=True)
+        exec_command("zip -d %s \"META-INF/*.MF\""%(self.inApk), allow_fail=True)
+        exec_command("zip -d %s \"META-INF/*.DSA\""%(self.inApk), allow_fail=True, allow_waring=False)
