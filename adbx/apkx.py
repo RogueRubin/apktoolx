@@ -16,11 +16,11 @@ class apkx(object):
 
     def create_workspace(self):
         if os.path.exists(self.workspace):
-            exec_command("rm -rf %s"%(self.workspace))
+            exec_command("rm -rf %s"%(self.workspace), doing=False)
         os.makedirs(self.workspace)
 
     def clear_workspace(self):
-        exec_command("rm -rf %s"%(self.workspace))
+        exec_command("rm -rf %s"%(self.workspace), doing=False)
 
     def get_superclass(self, smali_path):
         with open(smali_path) as smail_file:
@@ -173,3 +173,108 @@ class apkx(object):
         exec_command("zip -d %s \"META-INF/*.SF\""%(self.inApk), allow_fail=True)
         exec_command("zip -d %s \"META-INF/*.MF\""%(self.inApk), allow_fail=True)
         exec_command("zip -d %s \"META-INF/*.DSA\""%(self.inApk), allow_fail=True, allow_waring=False)
+
+    @output
+    def apk_2_smali(self):
+        try:
+            self.create_workspace()
+            if is_dex(self.inApk):
+                dexes = [self.inApk]
+            elif is_zip(self.inApk):
+                exec_command("unzip %s \"classes*.dex\" -d %s"%(self.inApk, self.workspace))
+                dexes = [os.path.join(self.workspace, item) for item in os.listdir(self.workspace) if item.endswith(".dex")]
+            else :
+                raise Exception("Not support file type")
+            outdir = "%s_smali"%(os.path.abspath(self.inApk)[0:-4])
+            for dex in dexes :
+                exec_command("%s d %s -o %s"%(BAKSMALI, dex , outdir))
+            return "Apk to smali success : %s"%outdir
+        except Exception as identifier:
+            raise identifier
+            return "Apk to smali error"
+        finally:
+            self.clear_workspace()
+    
+    @output
+    def dex_method_id_count(self):
+        try:
+            self.create_workspace()
+            if is_dex(self.inApk):
+                dexes = [self.inApk]
+            elif is_zip(self.inApk):
+                exec_command("unzip %s \"classes*.dex\" -d %s"%(self.inApk, self.workspace), doing=False)
+                dexes = [os.path.join(self.workspace, item) for item in os.listdir(self.workspace) if item.endswith(".dex")]
+            else :
+                raise Exception("Not support file type")
+            print("Calc method id count :")
+            total_count = 0
+            for dex in dexes :
+                methodsid = int(exec_command("hexdump -n 100 -C %s | grep 00000050 | awk -F ' ' '{print $13$12$11$10}'"%dex, status=False, doing=False), 16)
+                print("%s : %d"%(os.path.basename(dex), methodsid))
+                total_count += methodsid
+                #fieldsid = int(exec_command("hexdump -n 100 -C %s | grep 00000050 | awk -F ' ' '{print $5$4$3$2}'"%dexpath, log=False), 16)
+                #stringids=  int(exec_command("hexdump -n 100 -C %s | grep 00000030 | awk -F ' ' '{print $13$12$11$10}'" % dexpath, log=False) , 16)
+                #typeIds=    int(exec_command("hexdump -n 100 -C %s | grep 00000040 | awk -F ' ' '{print $5$4$3$2}'"%dexpath, log=False), 16)
+                #proto=      int(exec_command("hexdump -n 100 -C %s | grep 00000040 | awk -F ' ' '{print $13$12$11$10}'" % dexpath, log=False) , 16)
+            return "Total : %d"%(total_count)
+        except expression as identifier:
+            raise identifier
+            return "Calc dex method count error"
+        finally:
+            self.clear_workspace()
+    
+    @output
+    def dex_field_id_count(self):
+        try:
+            self.create_workspace()
+            if is_dex(self.inApk):
+                dexes = [self.inApk]
+            elif is_zip(self.inApk):
+                exec_command("unzip %s \"classes*.dex\" -d %s"%(self.inApk, self.workspace), doing=False)
+                dexes = [os.path.join(self.workspace, item) for item in os.listdir(self.workspace) if item.endswith(".dex")]
+            else :
+                raise Exception("Not support file type")
+            print("Calc field id count :")
+            total_count = 0
+            for dex in dexes :
+                fieldsid = int(exec_command("hexdump -n 100 -C %s | grep 00000050 | awk -F ' ' '{print $5$4$3$2}'"%dex, status=False, doing=False), 16)
+                print("%s : %d"%(os.path.basename(dex), fieldsid))
+                total_count += fieldsid
+                #methodsid = int(exec_command("hexdump -n 100 -C %s | grep 00000050 | awk -F ' ' '{print $13$12$11$10}'"%dex, status=False, doing=False), 16)
+                #stringids=  int(exec_command("hexdump -n 100 -C %s | grep 00000030 | awk -F ' ' '{print $13$12$11$10}'" % dexpath, log=False) , 16)
+                #typeIds=    int(exec_command("hexdump -n 100 -C %s | grep 00000040 | awk -F ' ' '{print $5$4$3$2}'"%dexpath, log=False), 16)
+                #proto=      int(exec_command("hexdump -n 100 -C %s | grep 00000040 | awk -F ' ' '{print $13$12$11$10}'" % dexpath, log=False) , 16)
+            return "Total : %d"%(total_count)
+        except expression as identifier:
+            raise identifier
+            return "Calc dex method count error"
+        finally:
+            self.clear_workspace()
+    
+    @output
+    def dex_type_id_count(self):
+        try:
+            self.create_workspace()
+            if is_dex(self.inApk):
+                dexes = [self.inApk]
+            elif is_zip(self.inApk):
+                exec_command("unzip %s \"classes*.dex\" -d %s"%(self.inApk, self.workspace), doing=False)
+                dexes = [os.path.join(self.workspace, item) for item in os.listdir(self.workspace) if item.endswith(".dex")]
+            else :
+                raise Exception("Not support file type")
+            print("Calc type id count :")
+            total_count = 0
+            for dex in dexes :
+                typeIds=    int(exec_command("hexdump -n 100 -C %s | grep 00000040 | awk -F ' ' '{print $5$4$3$2}'"%dex, status=False, doing=False), 16)
+                print("%s : %d"%(os.path.basename(dex), typeIds))
+                total_count += typeIds
+                #methodsid = int(exec_command("hexdump -n 100 -C %s | grep 00000050 | awk -F ' ' '{print $13$12$11$10}'"%dex, status=False, doing=False), 16)
+                #fieldsid = int(exec_command("hexdump -n 100 -C %s | grep 00000050 | awk -F ' ' '{print $5$4$3$2}'"%dexpath, log=False), 16)
+                #stringids=  int(exec_command("hexdump -n 100 -C %s | grep 00000030 | awk -F ' ' '{print $13$12$11$10}'" % dexpath, log=False) , 16)
+                #proto=      int(exec_command("hexdump -n 100 -C %s | grep 00000040 | awk -F ' ' '{print $13$12$11$10}'" % dexpath, log=False) , 16)
+            return "Total : %d"%(total_count)
+        except expression as identifier:
+            raise identifier
+            return "Calc dex method count error"
+        finally:
+            self.clear_workspace()

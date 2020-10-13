@@ -21,8 +21,11 @@ class adbx(object):
         return exec_command("%s install %s"%(self.adb, self.inApk))
 
     @output
-    def uninstall(self):
-        return exec_command("%s uninstall %s"%(self.adb, self.manifest.pkgname))
+    def uninstall(self, allow_fail = True):
+        b = exec_command("%s uninstall %s"%(self.adb, self.manifest.pkgname), allow_fail=allow_fail, status=False)
+        if "Unknown package" in b :
+            return "Unknow package : %s"%(self.manifest.pkgname)
+        return b
 
     @output
     def start(self, time = False, debug=False, num = 1):
@@ -31,7 +34,7 @@ class adbx(object):
             W = "-W"
         D = ""
         if debug:
-            D = "-D"
+            D = "-D -n "
         return exec_command("%s shell am start %s %s %s/%s"%(self.adb, W, D, self.manifest.pkgname, self.manifest.launchableActivity))
     
     @output

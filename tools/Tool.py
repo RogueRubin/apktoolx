@@ -14,7 +14,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-def exec_command(cmd, log=False, allow_fail=False, status=False, allow_waring=True):
+def exec_command(cmd, log=False, allow_fail=False, status=False, allow_waring=True, doing=True):
     if log :
         LOG.info("Begin exec %s"%cmd)
 
@@ -25,8 +25,8 @@ def exec_command(cmd, log=False, allow_fail=False, status=False, allow_waring=Tr
                 print("exec fail :\n%s%s%s\n%s"%(bcolors.FAIL, cmd, bcolors.ENDC, b))
                 exit()
             elif allow_waring:
-                print("Waring : \n%s%s%s\n%s"%(bcolors.FAIL, cmd, bcolors.ENDC, b))
-        elif a == 0:
+                print("Waring : \n%s%s%s\n"%(bcolors.FAIL, cmd, bcolors.ENDC))
+        elif a == 0 and doing:
             print("%sexec %s success%s"%(bcolors.OKGREEN, cmd, bcolors.ENDC))
     except Exception as e:
         if not allow_fail:
@@ -45,9 +45,28 @@ def output(function):
     def func(*args, **kwargs):
         print("----------------- %12s -----------------"%function.__name__)
         b = function(*args, **kwargs)
-        print("%s\n"%(str(b)))
+        print("%s%s%s\n"%(bcolors.OKBLUE, str(b), bcolors.ENDC))
         return b
     return func
+
+def is_zip(zip_file):
+    a,b = exec_command("zipinfo %s"%(zip_file), status=True, allow_fail=True, allow_waring=False, doing=False)
+    return a == 0
+
+def is_dex(dex_file):
+    with open(dex_file,"rb") as _dex:
+        try:
+            buf = _dex.read(6)
+            left_num = 0
+            for i in range(0,6):
+                #print("i : %d"%(i))
+                left_num = ( buf[i] << 8 * (5-i) ) | left_num
+            #print("left_num : %d == 110386968408115"%left_num)
+            return left_num == 110386968408115
+        except Exception as identifier:
+            raise identifier
+        finally:
+            _dex.close()
 
 CURR_DIR = os.path.dirname(__file__)
 

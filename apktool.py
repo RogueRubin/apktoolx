@@ -28,6 +28,12 @@ if __name__ == "__main__":
 
     parser.add_argument("-de", "--debugable", dest="debugable", action="store_true", help="debugable apk")
     
+    parser.add_argument("-ts", "--to-smali", dest="to_smali", action="store_true", help="Apk or dex baksmali to smali")
+
+    parser.add_argument("-dmc", "--dex-method-count", dest="dex_method_count", action="store_true", help="Apk or dex method count")
+    parser.add_argument("-dfc", "--dex-field-count", dest="dex_field_count", action="store_true", help="Apk or dex field count")
+    parser.add_argument("-dtc", "--dex-type-count", dest="dex_type_count", action="store_true", help="Apk or dex type count")
+    
     parser.add_argument("apk", action="store", help="The apk file path")
 
     args = parser.parse_args()
@@ -39,7 +45,7 @@ if __name__ == "__main__":
     if args.detail:
         adbx.print_apk()
     if args.uninstall:
-        adbx.uninstall()
+        adbx.uninstall(allow_fail=False)
     if args.install:
         adbx.install()
     if args.uninstall_install:
@@ -50,7 +56,7 @@ if __name__ == "__main__":
     if args.start_W:
         adbx.start(time=True, num=1)
     if args.start_D:
-        adbx.start(time=False, num=1)
+        adbx.start(time=False, debug=True, num=1)
     if args.uninstall_install_start:
         adbx.uninstall()
         adbx.install()
@@ -78,3 +84,12 @@ if __name__ == "__main__":
 
     if args.debugable:
         apkx.debugable()
+    
+    if args.to_smali:
+        apkx.apk_2_smali()
+    if args.dex_method_count:
+        apkx.dex_method_id_count()
+    if args.dex_field_count:
+        apkx.dex_field_id_count()
+    if args.dex_type_count:
+        apkx.dex_type_id_count()

@@ -12,10 +12,15 @@ class AndroidManifest(object):
     def __init__(self, apk_file=None):
         super(AndroidManifest, self).__init__()
         self.apk_file = apk_file
-        self.parse_manifest()
+        if is_zip(self.apk_file) and self.is_have_manifest(): 
+            self.parse_manifest()
+    
+    def is_have_manifest(self):
+        manifest = exec_command("zipinfo %s | grep \"AndroidManifest.xml\" | wc -l"%(self.apk_file), doing=False)
+        return int(manifest) > 0
     
     def parse_manifest(self):
-        b = exec_command("%s dump badging %s AndroidManifest.xml"%(AAPT, self.apk_file), log=False, allow_fail=True, allow_waring=False)
+        b = exec_command("%s dump badging %s AndroidManifest.xml"%(AAPT, self.apk_file), log=False, allow_fail=True, allow_waring=False, doing=False)
         if not b:
             raise Exception("Parse %s of AndroidManifest.xml Error !"%self.apk_file)
         self.pkgname = None
@@ -82,9 +87,9 @@ class AndroidManifest(object):
         return _attr
 
     def parse_application(self):
-        exec_command("unzip %s AndroidManifest.xml -d %s/.manifestcache"%(self.apk_file, CURR_DIR), allow_fail=False)
+        exec_command("unzip %s AndroidManifest.xml -d %s/.manifestcache"%(self.apk_file, CURR_DIR), allow_fail=False, doing=False)
         try:
-            b = exec_command("%s read %s/.manifestcache/AndroidManifest.xml application"%(AXML, CURR_DIR), allow_fail=False)
+            b = exec_command("%s read %s/.manifestcache/AndroidManifest.xml application"%(AXML, CURR_DIR), allow_fail=False, doing=False)
             for line in b.splitlines():
                 if line:
                     key_values = line.split(':')
