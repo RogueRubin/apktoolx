@@ -18,6 +18,8 @@ def exec_command(cmd, log=False, allow_fail=False, status=False, allow_waring=Tr
     if log :
         LOG.info("Begin exec %s"%cmd)
 
+    a = 0
+    b = ""
     try:
         a,b = subprocess.getstatusoutput(cmd)
         if a != 0 :
@@ -50,8 +52,8 @@ def output(function):
     return func
 
 def is_zip(zip_file):
-    a,b = exec_command("zipinfo %s"%(zip_file), status=True, allow_fail=True, allow_waring=False, doing=False)
-    return a == 0
+    a1,b1 = exec_command("zipinfo %s"%(zip_file), status=True, allow_fail=True, allow_waring=False, doing=False)
+    return a1 == 0
 
 def is_dex(dex_file):
     with open(dex_file,"rb") as _dex:

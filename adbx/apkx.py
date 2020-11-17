@@ -7,12 +7,36 @@ from tools.Tool import *
 import base64
 
 class apkx(object):
-    def __init__(self, inApk, manifest):
+    def __init__(self, inApk, manifest, adbx):
         self.inApk = inApk
         self.workspace = "%s/.workspace"%(os.path.abspath('.'))
-        
+        self.adbx = adbx
         self.manifest=manifest
         self.mac_mach = "''" if PLATFORM=="macos" else ""
+
+    ## adb 
+
+    def print_apk(self):
+        print(self.manifest.toString())
+    
+    def install(self):
+        self.adbx.install(self.inApk)
+
+    def uninstall(self, allow_fail = True):
+        return self.adbx.uninstall_item(self.manifest.pkgname)
+
+    def start(self, time = False, debug=False, num = 1):
+        self.adbx.start(self.manifest.pkgname, self.manifest.launchableActivity, time, debug, num)
+    
+    def pmclear(self):
+        self.adbx.pmclear(self.manifest.pkgname)
+
+    @output
+    def apksign(self, jks=JKS):
+        return exec_command("%s sign --ks %s --ks-key-alias debugkey --ks-pass pass:qwe123 --key-pass pass:qwe123 --out %s.signed.apk %s"%(APK_SIGNER, jks, self.inApk[0:-4], self.inApk))
+
+
+    ## apk
 
     def create_workspace(self):
         if os.path.exists(self.workspace):

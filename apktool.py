@@ -9,6 +9,8 @@ import argparse
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Yazhou.Xie's command tool")
+    parser.add_argument("-ua", "--uninstall-all", dest="uninstall_all", action="store_true", help="uninstall all installed apk")
+
     parser.add_argument("-d", "--detail", dest="detail", action="store_true", help="Display apk manifest detail")
     parser.add_argument("-u", "--uninstall", dest="uninstall", action="store_true", help="uninstall apk")
     parser.add_argument("-i","--install", dest="install", action="store_true", help="Install apk")
@@ -34,57 +36,60 @@ if __name__ == "__main__":
     parser.add_argument("-dfc", "--dex-field-count", dest="dex_field_count", action="store_true", help="Apk or dex field count")
     parser.add_argument("-dtc", "--dex-type-count", dest="dex_type_count", action="store_true", help="Apk or dex type count")
     
-    parser.add_argument("apk", action="store", help="The apk file path")
+    isNeedApk = True
+    for arg in sys.argv:
+        if arg.find("-ua") > -1 or arg.find("--uninstall-all") > -1:
+            isNeedApk = False
+    if isNeedApk:
+        parser.add_argument("apk", action="store", help="The apk file path")
 
     args = parser.parse_args()
-    
+    adbx = adbx()
+    if args.uninstall_all:
+        adbx.uninstall_all()
+        exit(0)
     apkpath = os.path.abspath(args.apk)
-    manifest = AndroidManifest(apkpath)
-    adbx = adbx(apkpath, manifest=manifest)
-    apkx = apkx(apkpath, manifest=manifest)
+    manifest = AndroidManifest(apkpath) 
+    apkx = apkx(apkpath, manifest=manifest, adbx = adbx)
     if args.detail:
-        adbx.print_apk()
+        apkx.print_apk()
     if args.uninstall:
-        adbx.uninstall(allow_fail=False)
+        apkx.uninstall(allow_fail=False)
     if args.install:
-        adbx.install()
+        apkx.install()
     if args.uninstall_install:
-        adbx.uninstall()
-        adbx.install()
+        apkx.uninstall()
+        apkx.install()
     if args.start:
-        adbx.start(time=False, num=1)
+        apkx.start(time=False, num=1)
     if args.start_W:
-        adbx.start(time=True, num=1)
+        apkx.start(time=True, num=1)
     if args.start_D:
-        adbx.start(time=False, debug=True, num=1)
+        apkx.start(time=False, debug=True, num=1)
     if args.uninstall_install_start:
-        adbx.uninstall()
-        adbx.install()
-        adbx.start(time=False, num=1)
+        apkx.uninstall()
+        apkx.install()
+        apkx.start(time=False, num=1)
     if args.uninstall_install_start_W:
-        adbx.uninstall()
-        adbx.install()
-        adbx.start(time=True, num=1)
+        apkx.uninstall()
+        apkx.install()
+        apkx.start(time=True, num=1)
     if args.pm_clear:
-        adbx.pmclear()
+        apkx.pmclear()
     if args.pm_clear_start:
-        adbx.pmclear()
-        adbx.start(time=False)
+        apkx.pmclear()
+        apkx.start(time=False)
     if args.pm_clear_start_W:
-        adbx.pmclear()
-        adbx.start(time=True)
+        apkx.pmclear()
+        apkx.start(time=True)
     if args.sign:
-        adbx.apksign()
-    
+        apkx.apksign()
     if args.kill_sign:
         apkx.kill_signcheck()
-
     if args.find_same_class:
         apkx.find_same_class()
-
     if args.debugable:
         apkx.debugable()
-    
     if args.to_smali:
         apkx.apk_2_smali()
     if args.dex_method_count:
