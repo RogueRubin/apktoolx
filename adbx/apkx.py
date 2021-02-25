@@ -105,7 +105,7 @@ class apkx(object):
             dexdir = "%s/dex"%self.workspace
             exec_command("unzip %s classes*.dex -d %s"%(self.inApk, dexdir),allow_fail=False)
             # 查找 application 并且进行修改
-            if self.manifest.applicaionName:
+            if self.manifest.applicaionName and self.manifest.applicaionName != "android.app.Application":
                 applicaionSmali = "L%s;"%(self.manifest.applicaionName.replace('.','/').strip())
                 smali_path,dexitem = self.find_class_path(applicaionSmali, dexdir)
                 if not smali_path:

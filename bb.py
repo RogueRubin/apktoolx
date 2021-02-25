@@ -1,13 +1,13 @@
 #!/usr/local/bin/python3.8
 
-from tools.bangcle.bangcle_tool import *
+from tools.bb.b_tool import *
 from tools.Tool import *
 
 import argparse
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description="Yazhou.Xie's Bangcle command tool")
+    parser = argparse.ArgumentParser(description="Yazhou.Xie's BB command tool")
 
     parser.add_argument("-c", "--config", dest="config", action="store_true", help="Display apk manifest detail")
 

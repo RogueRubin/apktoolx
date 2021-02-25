@@ -89,7 +89,7 @@ class AndroidManifest(object):
     def parse_application(self):
         exec_command("unzip %s AndroidManifest.xml -d %s/.manifestcache"%(self.apk_file, CURR_DIR), allow_fail=False, doing=False)
         try:
-            b = exec_command("%s read %s/.manifestcache/AndroidManifest.xml application"%(AXML, CURR_DIR), allow_fail=False, doing=False)
+            b = exec_command("%s read %s/.manifestcache/AndroidManifest.xml application"%(AXML, CURR_DIR), allow_fail=True, doing=False)
             for line in b.splitlines():
                 if line:
                     key_values = line.split(':')

@@ -1,9 +1,10 @@
 #!/usr/bin/python3.8
+# -*- coding: utf-8 -*-
 
 import os,sys
 from tools.Tool import *
 
-UNINSTALL_FILTER = ["com.github.shadowsocks", "com.github.shadowsocks.plugin.obfs_local", "com.topjohnwu.magisk"]
+UNINSTALL_FILTER = ["com.github.shadowsocks", "com.github.shadowsocks.plugin.obfs_local", "com.topjohnwu.magisk","g.w.mik.erl"]
 
 class adbx(object):
     def __init__(self, sdevice=""):
